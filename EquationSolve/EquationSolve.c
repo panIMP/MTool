@@ -3,7 +3,7 @@
 #include <math.h>
 
 #define MAX_MATRIX_LEN 10
-#define EPS 1e-6
+#define EPS 1e-30
 
 
 int mallocMat(double*** matA, int rows, int cols)
@@ -17,16 +17,17 @@ int mallocMat(double*** matA, int rows, int cols)
 	for (i = 0; i < rows; ++i)
 	{
 		if (((*matA)[i] = (double*)malloc(sizeof(double)* cols)) == NULL)
+		{
 			return -1;
+		}
 	}
 
 	return 0;
 }
 
 
-double calcDetMat(double** mat, int n)
+int calcMatDet(double** mat, double* det, int n)
 {
-	double det = 0.0;
 	int r = 0; 
 	int c = 0;
 	double** t_mat = NULL;
@@ -35,19 +36,19 @@ double calcDetMat(double** mat, int n)
 
 	if (n == 2)
 	{
-		det = mat[0][0] * mat[1][1] - mat[0][1] * mat[1][0];
-		return det;
+		*det = mat[0][0] * mat[1][1] - mat[0][1] * mat[1][0];
+		return 0;
 	}
 
 	if (mallocMat(&t_mat, n - 1, n - 1) < 0)
 	{
-		printf("malloc failure in mallocMat!");
-		exit(-1);
+		return -1;
 	}
 
 	for (r = 0; r < n; ++r)
 	{
 		int w = pow(-1, r);
+		double t_det = 0.0;
 
 		for (t_r = 0; t_r < n - 1; ++t_r)
 		{
@@ -62,10 +63,17 @@ double calcDetMat(double** mat, int n)
 			}
 		}
 
-		det += w * mat[r][0] * calcDetMat(t_mat, n - 1);
+		if (calcMatDet(t_mat, &t_det, n - 1) < 0)
+		{
+			return -1;
+		}
+		(*det) += w * mat[r][0] * t_det;
 	}
 
-	return det;
+	free(t_mat);
+	t_mat = NULL;
+
+	return 0;
 }
 
 
@@ -89,12 +97,12 @@ int revertMat(double** mat, double** matRev, int rows, int cols)
 int inverseMat(double** mat, double** matInv, int n)
 {
 	double** t_mat = NULL;
+	double** matRev = NULL;
 	int r = 0;
 	int c = 0;
 	int t_r = 0;
 	int t_c = 0;
 	double det = 0.0;
-	double** matRev = NULL;
 
 	if (n == 1)
 	{
@@ -118,12 +126,10 @@ int inverseMat(double** mat, double** matInv, int n)
 
 	if (mallocMat(&t_mat, n-1, n-1) < 0)
 	{
-		printf("malloc failure in mallocMat!");
 		return -1;
 	}
 	if (mallocMat(&matRev, n, n) < 0)
 	{
-		printf("malloc failure in mallocMat!");
 		return -1;
 	}
 
@@ -132,6 +138,7 @@ int inverseMat(double** mat, double** matInv, int n)
 		for (c = 0; c < n; ++c)
 		{
 			int w = pow(-1, (r + c) % 2);
+			double t_det = 0.0;
 
 			for (t_r = 0; t_r < n - 1; ++t_r)
 			{
@@ -150,7 +157,11 @@ int inverseMat(double** mat, double** matInv, int n)
 				}
 			}
 
-			matRev[r][c] = w * calcDetMat(t_mat, n - 1);
+			if (calcMatDet(t_mat, &t_det, n - 1) < 0)
+			{
+				return -1;
+			}
+			matRev[r][c] = w * t_det;
 		}
 
 		det += matRev[r][0] * mat[r][0];
@@ -168,6 +179,11 @@ int inverseMat(double** mat, double** matInv, int n)
 	}
 
 	revertMat(matRev, matInv, n, n);
+
+	free(matRev);
+	matRev = NULL;
+	free(t_mat);
+	t_mat = NULL;
 
 	return 0;
 }
@@ -200,21 +216,47 @@ int mulMat(double** mat1, double** mat2, double** mat3, int rows1, int n, int co
 }
 
 
+int getEquationSolution(double** matA, double** matB, double** matX, int n)
+{
+	double** matAInv = NULL;
+
+	if (mallocMat(&matAInv, n, n) < 0)
+		return -1;
+
+	if (inverseMat(matA, matAInv, n) < 0)
+	{
+		printf("inverse mat not exists");
+		return -1;
+	}
+
+	mulMat(matAInv, matB, matX, n, n, 1);
+
+	return 0;
+}
+
+
+int getAffineTransformation(double** src, double** dst, double** matT)
+{
+
+
+	return 0;
+}
+
+
 int main()
 {
 	int n;
 	int r, c;
 	double** matA = NULL;
-	double** matAInv = NULL;
-	double** matB = NULL;
 	double** matX = NULL;
+	double** matB = NULL;
+
 
 	// input matA, matB
 	printf("input the n of matrix: ");
 	fscanf_s(stdin, "%d", &n);
 	mallocMat(&matA, n, n);
 	mallocMat(&matB, n, 1);
-	mallocMat(&matAInv, n, n);
 	mallocMat(&matX, n, n);
 
 	printf("input the value of the matA: \n");
@@ -232,25 +274,15 @@ int main()
 		fscanf_s(stdin, "%lf", &matB[r][0]);
 	}
 
-	// get inverse mat of matA and output inverse mat of matA
-	if (inverseMat(matA, matAInv, n) < 0)
+
+	// get matX and output matX
+	if (getEquationSolution(matA, matB, matX, n) < 0)
 	{
-		printf("inverse mat not exists");
+		printf("no solution!\n");
 		return -1;
 	}
 
-	printf("the inverse mat of matA is: \n");
-	for (r = 0; r < n; ++r)
-	{
-		for (c = 0; c < n; ++c)
-		{
-			printf("%lf\t", matAInv[r][c]);
-		}
-		printf("\n");
-	}
 
-	// get matX and output matX
-	mulMat(matAInv, matB, matX, n, n, 1);
 	printf("the solution is: \n");
 	for (r = 0; r < n; ++r)
 	{
