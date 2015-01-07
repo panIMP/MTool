@@ -1,6 +1,5 @@
 ﻿  EquationSolve.c
 e:\yun\item\proj\vs\mtool\equationsolve\equationsolve.c(10): warning C4101: “j”: 未引用的局部变量
 e:\yun\item\proj\vs\mtool\equationsolve\equationsolve.c(49): warning C4244: “初始化”: 从“double”转换到“int”，可能丢失数据
-e:\yun\item\proj\vs\mtool\equationsolve\equationsolve.c(130): warning C4244: “初始化”: 从“double”转换到“int”，可能丢失数据
-e:\yun\item\proj\vs\mtool\equationsolve\equationsolve.c(83): warning C4716: “revertMat”: 必须返回一个值
+e:\yun\item\proj\vs\mtool\equationsolve\equationsolve.c(132): warning C4244: “初始化”: 从“double”转换到“int”，可能丢失数据
   EquationSolve.vcxproj -> E:\Yun\item\proj\vs\MTool\EquationSolve\Debug\EquationSolve.exe
