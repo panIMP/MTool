@@ -189,7 +189,7 @@ int inverseMat(double** mat, double** matInv, int n)
 }
 
 
-int mulMat(double** mat1, double** mat2, double** mat3, int rows1, int n, int cols2)
+int mulMat(double** mat1, double** mat2, double** matRes, int rows1, int cols1rows2, int cols2)
 {
 	int r1 = 0;
 	int c1 = 0;
@@ -201,13 +201,13 @@ int mulMat(double** mat1, double** mat2, double** mat3, int rows1, int n, int co
 	{
 		for (c2 = 0; c2 < cols2; ++c2)
 		{
-			for (c1 = 0; c1 < n; ++c1)
+			for (c1 = 0; c1 < cols1rows2; ++c1)
 			{
 				r2 = c1;
 				val += mat1[r1][c1] * mat2[r2][c2];
 			}
 
-			mat3[r1][c2] = val;
+			matRes[r1][c2] = val;
 			val = 0.0;
 		}
 	}
@@ -216,7 +216,7 @@ int mulMat(double** mat1, double** mat2, double** mat3, int rows1, int n, int co
 }
 
 
-int getEquationSolution(double** matA, double** matB, double** matX, int n)
+int calcEquationSolution(double** matA, double** matB, double** matX, int n)
 {
 	double** matAInv = NULL;
 
@@ -225,19 +225,32 @@ int getEquationSolution(double** matA, double** matB, double** matX, int n)
 
 	if (inverseMat(matA, matAInv, n) < 0)
 	{
-		printf("inverse mat not exists");
 		return -1;
 	}
 
 	mulMat(matAInv, matB, matX, n, n, 1);
 
+	free(matAInv);
+	matAInv = NULL;
+
 	return 0;
 }
 
 
-int getAffineTransformation(double** src, double** dst, double** matT)
+int calcMatTransformation(double** src, double** dst, double** matT, int n)
 {
+	double** srcInv = NULL;
 
+	if (mallocMat(&srcInv, n, n) < 0)
+		return -1;
+
+	if (inverseMat(src, srcInv, n) < 0)
+		return -1;
+	
+	mulMat(dst, srcInv, matT, n, n, n);
+
+	free(srcInv);
+	srcInv = NULL;
 
 	return 0;
 }
@@ -251,15 +264,13 @@ int main()
 	double** matX = NULL;
 	double** matB = NULL;
 
-
-	// input matA, matB
-	printf("input the n of matrix: ");
+	fprintf(stdout, "input the n of matrix: ");
 	fscanf_s(stdin, "%d", &n);
 	mallocMat(&matA, n, n);
-	mallocMat(&matB, n, 1);
+	mallocMat(&matB, n, n);
 	mallocMat(&matX, n, n);
 
-	printf("input the value of the matA: \n");
+	fprintf(stdout, "input the value of the matA: \n");
 	for (r = 0; r < n; ++r)
 	{
 		for (c = 0; c < n; ++c)
@@ -268,28 +279,24 @@ int main()
 		}
 	}
 
-	printf("input the value of matB: \n");
+	fprintf(stdout, "input the value of the matB: \n");
 	for (r = 0; r < n; ++r)
 	{
-		fscanf_s(stdin, "%lf", &matB[r][0]);
+		for (c = 0; c < n; ++c)
+		{
+			fscanf_s(stdin, "%lf", &matB[r][c]);
+		}
 	}
 
-
-	// get matX and output matX
-	if (getEquationSolution(matA, matB, matX, n) < 0)
-	{
-		printf("no solution!\n");
-		return -1;
-	}
-
-
-	printf("the solution is: \n");
+	calcMatTransformation(matA, matB, matX, n);
 	for (r = 0; r < n; ++r)
 	{
-		printf("%lf\t", matX[r][0]);
+		for (c = 0; c < n; ++c)
+		{
+			fprintf(stdout, "%lf\t", matX[r][c]);
+		}
 	}
 
-	getchar();
-	getchar();
+	system("pause");
 	return 0; 
 }
