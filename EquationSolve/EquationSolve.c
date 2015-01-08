@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include "../SharedInc/EquationSolve.h"
 
 #define MAX_MATRIX_LEN 10
 #define EPS 1e-30
@@ -10,13 +11,13 @@ int mallocMat(double*** matA, int rows, int cols)
 {
 	int i, j;
 
-	*matA = (double**)malloc(sizeof(double*) * rows);
+	*matA = (double**)malloc(rows * sizeof(double*));
 	if (*matA == NULL)
 		return -1;
 
 	for (i = 0; i < rows; ++i)
 	{
-		if (((*matA)[i] = (double*)malloc(sizeof(double)* cols)) == NULL)
+		if (((*matA)[i] = (double*)malloc(cols * sizeof(double))) == NULL)
 		{
 			return -1;
 		}
@@ -25,6 +26,24 @@ int mallocMat(double*** matA, int rows, int cols)
 	return 0;
 }
 
+int callocMat(double*** matA, int rows, int cols)
+{
+	int i, j;
+
+	*matA = (double**)calloc(rows, sizeof(double*));
+	if (*matA == NULL)
+		return -1;
+
+	for (i = 0; i < rows; ++i)
+	{
+		if (((*matA)[i] = (double*)calloc(cols, sizeof(double))) == NULL)
+		{
+			return -1;
+		}
+	}
+
+	return 0;
+}
 
 int calcMatDet(double** mat, double* det, int n)
 {
@@ -40,7 +59,7 @@ int calcMatDet(double** mat, double* det, int n)
 		return 0;
 	}
 
-	if (mallocMat(&t_mat, n - 1, n - 1) < 0)
+	if (callocMat(&t_mat, n - 1, n - 1) < 0)
 	{
 		return -1;
 	}
@@ -124,11 +143,11 @@ int inverseMat(double** mat, double** matInv, int n)
 		return 0;
 	}
 
-	if (mallocMat(&t_mat, n-1, n-1) < 0)
+	if (callocMat(&t_mat, n-1, n-1) < 0)
 	{
 		return -1;
 	}
-	if (mallocMat(&matRev, n, n) < 0)
+	if (callocMat(&matRev, n, n) < 0)
 	{
 		return -1;
 	}
@@ -220,7 +239,7 @@ int calcEquationSolution(double** matA, double** matB, double** matX, int n)
 {
 	double** matAInv = NULL;
 
-	if (mallocMat(&matAInv, n, n) < 0)
+	if (callocMat(&matAInv, n, n) < 0)
 		return -1;
 
 	if (inverseMat(matA, matAInv, n) < 0)
@@ -241,7 +260,7 @@ int calcMatTransformation(double** src, double** dst, double** matT, int n)
 {
 	double** srcInv = NULL;
 
-	if (mallocMat(&srcInv, n, n) < 0)
+	if (callocMat(&srcInv, n, n) < 0)
 		return -1;
 
 	if (inverseMat(src, srcInv, n) < 0)
@@ -256,6 +275,8 @@ int calcMatTransformation(double** src, double** dst, double** matT, int n)
 }
 
 
+/*
+// Sample
 int main()
 {
 	int n;
@@ -300,3 +321,4 @@ int main()
 	system("pause");
 	return 0; 
 }
+*/

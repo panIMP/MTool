@@ -1,0 +1,8 @@
+﻿  MahaDist.c
+  EquationSolve.c
+e:\git\mtool\equationsolve\equationsolve.c(12): warning C4101: “j”: 未引用的局部变量
+e:\git\mtool\equationsolve\equationsolve.c(31): warning C4101: “j”: 未引用的局部变量
+e:\git\mtool\equationsolve\equationsolve.c(69): warning C4244: “初始化”: 从“double”转换到“int”，可能丢失数据
+e:\git\mtool\equationsolve\equationsolve.c(159): warning C4244: “初始化”: 从“double”转换到“int”，可能丢失数据
+  正在生成代码...
+  MahaDist.vcxproj -> E:\Git\MTool\MahaDist\Debug\MahaDist.exe
